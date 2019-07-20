@@ -2,45 +2,73 @@ package tgdb
 
 import "fmt"
 
-//TODO 定义Model接口 {
-// dbname
-// tablename
-// table ->key
-// table ->save()
-// }
-type _DB struct {
+const (
+	INSERT = iota
+	UPDATE
+	DELETE
+)
+
+
+type FUNC interface {
+	Use(string) DB
+	Insert(string) DB
+	Update(string) DB
+	Key(interface{}) DB
+	Where(map[string]string) DB
+	Done() bool
+}
+
+type DB struct {
+	op int
 	db    string
 	table string
 	sql   string
 }
-type _KEY struct {
-	_   interface{}
-	KEY interface{}
-}
-
-var OperationalStatement map[string]string = map[string]string{
-	"select": ""}
-
 //TODO 使用数据库 Use
-func Use(dbname string) *_DB {
-	_d := &_DB{}
-	_d.db = dbname
-	return _d
+func (d DB)Use(dbname string) DB {
+	d.db = dbname
+
+	return d
 }
 
 //TODO 插入数据 HEAD
-func (d _DB) Insert(table string) _DB {
+func (d DB) Insert(table string) DB {
+	d.op = INSERT
 	d.table = table
+	d.sql = "insert into "+table
 	return d
 }
-
+//TODO 升级数据
+func (d DB)Update(table string) DB  {
+	d.op = UPDATE
+	d.table = table
+	d.sql = "update "+table
+	return d
+}
 //TODO 插入数据 KEY
-func (d _DB) Key(key map[string]interface{}) _DB {
+func (d DB) Key(k interface{}) DB {
+	sl :=""
+	switch k.(type) {
+	case map[string]string:
+		sl = ConvertMapString(k.(map[string]string))
+	case []string:
+		sl = ConvertArrayStrign(k.([]string))
+	}
+	switch d.op {
+	case INSERT:
+		d.sql += (" set "+sl)
+	case UPDATE:
+		d.sql += (" set "+sl)
+	}
 	return d
 }
-
+//TODO
+func (d DB) Where(key map[string]string) DB{
+	d.sql += " where "+ConvertMapString(key)
+	return d
+}
 //TODO 数据
-func (d _DB) Save() bool {
+func (d DB) Done() bool {
 	fmt.Println(d)
 	return true
 }
