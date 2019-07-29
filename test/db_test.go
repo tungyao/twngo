@@ -1,7 +1,7 @@
 package test
 
 import (
-	"../twngo/tgdb"
+	"../tgdb"
 	"testing"
 )
 
