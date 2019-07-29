@@ -2,7 +2,7 @@
 
 ### inclue：
 1. ORM for SQL`Developing...`
-2. JSON for mapping to string tool`Waiting`
+2. JSON for mapping to string tool`Developing...`
 3. Distributed cache system`Waiting`
 4. Distributed file storage system `Waiting`
 5. Oauth `Wating`
