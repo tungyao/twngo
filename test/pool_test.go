@@ -3,26 +3,34 @@ package test
 import (
 	"../tnpool"
 	"fmt"
-	"github.com/pkg/errors"
 	"testing"
+	"time"
+	//"time"
 )
 
 func TestPool(t *testing.T) {
-	var n int = 0
+	n := 0
 	e := tnpool.NewTask(func() error {
+		time.Sleep(time.Second * 2)
 		n++
 		fmt.Println(n)
-		if n >= 10000 {
-			fmt.Println("超过10000")
-			return errors.New("STOP")
-		}
 		return nil
 	})
-	p := tnpool.NewPool(4)
+	p := tnpool.NewPool(8)
 	go func() {
-		for {
+		for i := 0; i < 8; i++ {
 			p.EntryChannel <- e
 		}
+
 	}()
+
 	p.Run()
+
+}
+func TestChan(t *testing.T) {
+	ch := make(chan string)
+	go func() {
+		ch <- "send"
+	}()
+
 }

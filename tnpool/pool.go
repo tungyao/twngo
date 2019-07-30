@@ -16,30 +16,38 @@ func (t *Task) Execute() {
 
 type Pool struct {
 	EntryChannel  chan *Task
-	InnerChanerl  chan *Task
+	InnerChanel   chan *Task
 	MaxWorkNumber int
 }
 
 func NewPool(cap int) *Pool {
 	p := Pool{
 		EntryChannel:  make(chan *Task),
-		InnerChanerl:  make(chan *Task),
+		InnerChanel:   make(chan *Task),
 		MaxWorkNumber: cap,
 	}
 	return &p
 }
-func (p *Pool) Worker(workid int) {
-	for task := range p.InnerChanerl {
+func (p *Pool) Worker(worked int) {
+	for task := range p.InnerChanel {
 		task.Execute()
-		fmt.Println("workid", workid, "执行完毕")
+		fmt.Println("worked", worked, "执行完毕")
 	}
+}
+func (p *Pool) Close() {
+	close(p.EntryChannel)
+	close(p.InnerChanel)
 }
 func (p *Pool) Run() {
 	for i := 0; i < p.MaxWorkNumber; i++ {
 		go p.Worker(i)
 	}
-
-	for task := range p.EntryChannel {
-		p.InnerChanerl <- task
+	if _, va := <-p.EntryChannel; va {
+		for task := range p.EntryChannel {
+			p.InnerChanel <- task
+		}
+	} else {
+		return
 	}
+
 }
