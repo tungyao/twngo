@@ -1,4 +1,4 @@
-package tgdb
+package tndb
 
 type operation interface {
 }

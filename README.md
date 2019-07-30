@@ -1,9 +1,10 @@
 # twngo 
 
 ### inclue：
-1. ORM for SQL`Developing...`
-2. JSON for mapping to string tool`Developing...`
-3. Distributed cache system`Waiting`
-4. Distributed file storage system `Waiting`
-5. Oauth `Wating`
-6. micro-services Architecture) `Wating`
+* ORM for SQL`Developing...`
+* JSON for mapping to string tool`Developing...`
+* Thread pool `Developing...` 
+* Distributed cache system`Waiting`
+* Distributed file storage system `Waiting`
+* Oauth `Wating`
+* micro-services Architecture) `Wating`
