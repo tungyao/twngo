@@ -2,6 +2,7 @@ package tnpool
 
 import (
 	"fmt"
+	"time"
 )
 
 type Task struct {
@@ -33,21 +34,31 @@ func NewPool(cap int) *Pool {
 func (p *Pool) Worker(worked int) {
 	for task := range p.InnerChanel {
 		task.Execute()
-		fmt.Println("运行：", task, "完毕")
-
+		fmt.Println("运行：", worked, "完毕")
 	}
 }
 func (p *Pool) Close() {
 	close(p.EntryChannel)
 	close(p.InnerChanel)
 }
+
 func (p *Pool) Run() {
-	for i := 0; i < p.MaxWorkNumber; i++ {
+	for i := 0; i < p.MaxWorkNumber*2; i++ {
 		go p.Worker(i)
-		fmt.Println("开启线程:", i)
+		//fmt.Println("开启线程:", i)
 	}
-	for task := range p.EntryChannel {
-		p.InnerChanel <- task
+	for {
+		select {
+		case ret := <-p.EntryChannel:
+			if _, ok := <-p.EntryChannel; ok {
+				p.InnerChanel <- ret
+			}
+		case <-time.After(time.Second * 5):
+			fmt.Println("超时关闭")
+			p.Close()
+			return
+		}
+
 	}
 
 }
