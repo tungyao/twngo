@@ -1,8 +1,6 @@
 package tnpool
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type OPool struct {
 	Queue          chan func() error
@@ -19,22 +17,24 @@ func (self *OPool) Init(runtineNumber int, total int) {
 	self.Queue = make(chan func() error, total)
 	self.Result = make(chan error, total)
 }
-
+func (self *OPool) Work() {
+	for task := range self.Queue {
+		self.Result <- task()
+	}
+	//for {
+	//	task, ok := <-self.Queue
+	//	if !ok {
+	//		break
+	//	}
+	//	err := task()
+	//	self.Result <- err
+	//}
+}
 func (self *OPool) Start() {
 	//开启 number 个goruntine
 	for i := 0; i < self.RuntineNumber; i++ {
-		go func() {
-			for {
-				task, ok := <-self.Queue
-				if !ok {
-					break
-				}
-				err := task()
-				self.Result <- err
-			}
-		}()
+		go self.Work()
 	}
-
 	//获取每个任务的处理结果
 	for j := 0; j < self.RuntineNumber; j++ {
 		res, ok := <-self.Result
