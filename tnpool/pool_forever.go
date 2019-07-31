@@ -2,59 +2,61 @@ package tnpool
 
 import (
 	"fmt"
-	"time"
 )
 
 type Task struct {
-	f func() error
+	f chan func() error
 }
 
-func NewTask(f func() error) *Task {
+func NewTask(f chan func() error) *Task {
 	t := Task{f: f}
+	go t.Execute()
 	return &t
 }
 func (t *Task) Execute() {
-	t.f()
+	for f := range t.f {
+		f()
+	}
 }
 
-type Pool struct {
+type fPool struct {
 	EntryChannel  chan *Task
 	InnerChanel   chan *Task
 	MaxWorkNumber int
+	Stop          chan bool
 }
 
-func NewPool(cap int) *Pool {
-	p := Pool{
+func NewPool(cap int) *fPool {
+	p := fPool{
 		EntryChannel:  make(chan *Task),
 		InnerChanel:   make(chan *Task),
+		Stop:          make(chan bool),
 		MaxWorkNumber: cap,
 	}
 	return &p
 }
-func (p *Pool) Worker(worked int) {
+func (p *fPool) Worker(worked int) {
 	for task := range p.InnerChanel {
 		task.Execute()
 		fmt.Println("运行：", worked, "完毕")
 	}
 }
-func (p *Pool) Close() {
+func (p *fPool) Close() {
 	close(p.EntryChannel)
 	close(p.InnerChanel)
 }
 
-func (p *Pool) Run() {
-	for i := 0; i < p.MaxWorkNumber*2; i++ {
+func (p *fPool) Run() {
+	for i := 0; i < p.MaxWorkNumber; i++ {
 		go p.Worker(i)
-		//fmt.Println("开启线程:", i)
 	}
 	for {
 		select {
 		case ret := <-p.EntryChannel:
-			if _, ok := <-p.EntryChannel; ok {
-				p.InnerChanel <- ret
-			}
-		case <-time.After(time.Second * 5):
-			fmt.Println("超时关闭")
+			p.InnerChanel <- ret
+			break
+		case <-p.Stop:
+			fmt.Println("线程关闭关闭")
 			p.Close()
 			return
 		}
