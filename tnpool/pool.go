@@ -1,6 +1,8 @@
 package tnpool
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Task struct {
 	f func() error
@@ -31,7 +33,8 @@ func NewPool(cap int) *Pool {
 func (p *Pool) Worker(worked int) {
 	for task := range p.InnerChanel {
 		task.Execute()
-		fmt.Println("worked", worked, "执行完毕")
+		fmt.Println("运行：", task, "完毕")
+
 	}
 }
 func (p *Pool) Close() {
@@ -41,13 +44,10 @@ func (p *Pool) Close() {
 func (p *Pool) Run() {
 	for i := 0; i < p.MaxWorkNumber; i++ {
 		go p.Worker(i)
+		fmt.Println("开启线程:", i)
 	}
-	if _, va := <-p.EntryChannel; va {
-		for task := range p.EntryChannel {
-			p.InnerChanel <- task
-		}
-	} else {
-		return
+	for task := range p.EntryChannel {
+		p.InnerChanel <- task
 	}
 
 }
