@@ -1,7 +1,9 @@
 package tnjson
 
 import (
+	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -9,6 +11,7 @@ import (
 type JSON struct {
 	json strings.Builder
 	mp   bool
+	jp   map[string]interface{}
 }
 
 func (j *JSON) _format(obj interface{}) *JSON {
@@ -53,7 +56,14 @@ func (j *JSON) Encode(obj interface{}) string {
 	js = js[:len(js)-1]
 	return "{" + js + "}"
 }
-func (j *JSON) Decode() interface{} {
-
+func (j *JSON) Decode(json string) interface{} {
+	json = json[1 : len(json)-1]
+	stringArr := strings.Split(json, ",")
+	reg := regexp.MustCompile(`[\w]+`)
+	for i := 0; i < len(stringArr); i++ {
+		str := strings.Split(stringArr[i], ":")
+		j.jp[reg.FindAllString(str[0], -1)[0]] = reg.FindAllString(str[1], -1)[0]
+	}
+	fmt.Println(j.jp)
 	return 0
 }

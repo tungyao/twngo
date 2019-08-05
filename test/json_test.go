@@ -5,15 +5,19 @@ import (
 	"testing"
 )
 
+//func TestJSON(t *testing.T) {
+//	data := map[string]interface{}{"a": "a"}
+//	json := new(tnjson.JSON)
+//	t.Log(json.Encode(data))
+//	data = map[string]interface{}{"a": "a", "b": "b"}
+//	t.Log(json.Encode(data))
+//	data = map[string]interface{}{"a": "a", "c": &map[string]interface{}{"d": 123}, "b": 1}
+//	t.Log(json.Encode(data))
+//
+//}
 func TestJSON(t *testing.T) {
-	data := map[string]interface{}{"a": "a"}
 	json := new(tnjson.JSON)
-	t.Log(json.Encode(data))
-	data = map[string]interface{}{"a": "a", "b": "b"}
-	t.Log(json.Encode(data))
-	data = map[string]interface{}{"a": "a", "c": &map[string]interface{}{"d": 123}, "b": 1}
-	t.Log(json.Encode(data))
-
+	json.Decode("{'a':'b','c':1}")
 }
 
 //
