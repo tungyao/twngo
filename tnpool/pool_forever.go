@@ -14,7 +14,7 @@ func NewTask(f func() error) *Task {
 	return &t
 }
 func (t *Task) Execute() {
-	t.f()
+	_ = t.f()
 }
 
 type FPool struct {
