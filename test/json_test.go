@@ -17,7 +17,8 @@ import (
 //}
 func TestJSON(t *testing.T) {
 	json := new(tnjson.JSON)
-	json.Decode("{'a':'b','c':1}")
+	json.Decode("{\"a\":\"a你好sd23\",\"c\":1123}")
+	//fmt.Println(data)
 }
 
 //
