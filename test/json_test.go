@@ -2,6 +2,7 @@ package test
 
 import (
 	"../tnjson"
+	"strconv"
 	"testing"
 )
 
@@ -17,7 +18,9 @@ import (
 //}
 func TestJSON(t *testing.T) {
 	json := new(tnjson.JSON)
-	json.Decode("{\"a\":\"a你好sd23\",\"c\":1123}")
+	data := json.Decode("{\"a\":\"a你好sd23\",\"c\":1123}")
+	c, _ := strconv.Atoi(data["c"].(string))
+	t.Log(c + 1)
 	//fmt.Println(data)
 }
 

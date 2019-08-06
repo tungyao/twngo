@@ -16,7 +16,12 @@ func ConvertMapString(m map[string]string) string {
 func ConvertArrayString(arr []string) string {
 	sl := ""
 	for _, v := range arr {
-		sl += "'" + v + "',"
+		if v == "NULL" {
+			sl += "" + v + ","
+		} else {
+			sl += "'" + v + "',"
+		}
+
 	}
 	return "(" + sl[:len(sl)-1] + ")"
 }
