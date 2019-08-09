@@ -38,3 +38,32 @@ func keyForInsertOrUpdate(k interface{}) string {
 	}
 	return sl
 }
+func B2S(obj interface{}) interface{} { //TODO 将查询数据正确显示 uint8 -> string
+
+	switch obj.(type) {
+	case map[string]interface{}:
+		data := make(map[string]interface{})
+		for k, v := range obj.(map[string]interface{}) {
+			data[k] = byteToString(v.([]uint8))
+		}
+		return data
+	case []map[string]interface{}:
+		length := len(obj.([]map[string]interface{}))
+		data := make([]map[string]interface{}, length)
+		for k, v := range obj.([]map[string]interface{}) {
+			for j, l := range v {
+				data[k][j] = byteToString(l.([]uint8))
+			}
+		}
+		return data
+
+	}
+	return nil
+}
+func byteToString(bs []uint8) string {
+	ba := []byte{}
+	for _, b := range bs {
+		ba = append(ba, byte(b))
+	}
+	return string(ba)
+}
