@@ -108,9 +108,9 @@ func (d *DB) IsExits() *DB {
 }
 
 //TODO 使用数据库 Use
-func (d *DB) Use(dbname string) *DB {
+func (d *DB) Use(dbname string, pwd string) *DB {
 	d.db = dbname
-	db, err := sql.Open("mysql", "root:123456@tcp(localhost)/tung_db?charset=utf8")
+	db, err := sql.Open("mysql", "root:"+pwd+"@tcp(localhost)/"+dbname+"?charset=utf8")
 	fmt.Println(err)
 	d.kel = db
 	return d
