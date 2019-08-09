@@ -2,6 +2,7 @@ package tndb
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,7 +18,7 @@ type FUNC interface {
 
 	Select(string) *DB
 	All() *DB
-	FindOne(column ...interface{}) *DB
+	FindOne(column ...interface{}) map[string]interface{}
 	Count() *DB
 	IsExits() *DB
 
@@ -34,19 +35,19 @@ type DB struct {
 	table     string
 	sql       string
 	kel       *sql.DB
-	formatSql [4]string
+	formatSql map[string]string
 }
 
 func (d *DB) Select(tablename string) *DB {
 	d.op = Select
-	d.formatSql[0] = "select"
-	d.formatSql[2] = "from " + tablename
-
+	d.formatSql = make(map[string]string)
+	d.formatSql["select"] = "select "
+	d.formatSql["from"] = " from " + tablename
 	return d
 }
 
 func (d *DB) All() *DB {
-	d.formatSql[1] = " * "
+	d.sql += "*"
 
 	return d
 }
@@ -56,22 +57,25 @@ type data struct {
 	email string
 }
 
-func (d *DB) FindOne(column ...interface{}) *DB {
-	var tos string
-	for _, v := range column {
-		tos += string(v.(string)) + ","
-
-	}
-	d.formatSql[1] = " " + tos[:len(tos)-1] + " "
-	d.formatSql[3] = " limit 1"
-	for _, v := range d.formatSql {
-		d.sql += v
+func (d *DB) FindOne(column ...interface{}) map[string]interface{} {
+	var tos string = ""
+	if len(column) != 0 {
+		for _, v := range column {
+			tos += string(v.(string)) + ","
+		}
+	} else {
+		tos = " * "
 	}
 
+	d.formatSql["column"] = tos[:len(tos)-1]
+	d.formatSql["limit"] = " limit 1"
+	d.sql = d.formatSql["select"] + d.formatSql["column"] + d.formatSql["from"] + d.formatSql["where"] + d.formatSql["limit"]
+	fmt.Println(d.sql)
 	rows, err := d.kel.Query(d.sql)
 	toError(err)
 	columns, _ := rows.Columns()
 	length := len(columns)
+	data := make(map[string]interface{})
 	for rows.Next() {
 		value := make([]interface{}, length)
 		columnPointers := make([]interface{}, length)
@@ -79,14 +83,14 @@ func (d *DB) FindOne(column ...interface{}) *DB {
 			columnPointers[i] = &value[i]
 		}
 		rows.Scan(columnPointers...)
-		data := make(map[string]interface{})
 		for i := 0; i < length; i++ {
 			columnName := columns[i]
 			columnValue := columnPointers[i].(*interface{})
 			data[columnName] = *columnValue
 		}
 	}
-	return d
+	fmt.Println(data)
+	return data
 }
 
 func B2S(bs []uint8) string {
@@ -106,7 +110,8 @@ func (d *DB) IsExits() *DB {
 //TODO 使用数据库 Use
 func (d *DB) Use(dbname string) *DB {
 	d.db = dbname
-	db, _ := sql.Open("mysql", "root:123456@tcp(localhost)/tung_db?charset=utf8")
+	db, err := sql.Open("mysql", "root:123456@tcp(localhost)/tung_db?charset=utf8")
+	fmt.Println(err)
 	d.kel = db
 	return d
 }
@@ -142,6 +147,7 @@ func (d *DB) Key(k interface{}) *DB {
 //TODO
 func (d *DB) Where(key map[string]string) *DB {
 	d.sql += " where " + ConvertMapString(key)
+	d.formatSql["where"] = " where " + ConvertMapString(key)
 	return d
 }
 
