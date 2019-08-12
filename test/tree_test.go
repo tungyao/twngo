@@ -3,21 +3,19 @@ package test
 import (
 	"../tnwb"
 	"fmt"
+	"net/http"
 	"testing"
 )
 
 func TestTree(t *testing.T) {
-	tre := tnwb.NewTrie()
-	tre.Insert("ab", func() {
-		fmt.Println("/ab")
-	})
+	route := tnwb.NewTrie()
 
-	tre.Insert("ba", func() {
-		fmt.Println("/ba")
+	route.Router("get", "/a", func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = fmt.Fprint(writer, "/a")
 	})
-
-	if fun := tre.Find("ba"); fun != nil {
-		fun()
-	}
+	route.Router("get", "/a/a", func(writer http.ResponseWriter, request *http.Request) {
+		_, _ = fmt.Fprint(writer, "/a/a")
+	})
+	route.Listening(":80", "", "", route)
 
 }
