@@ -50,10 +50,7 @@ func (mux *Trie) Insert(method string, path string, handler http.HandlerFunc) {
 				node.terminal = false                            //false 表面 我下面还有节点
 				son.child[key] = node                            //将数据放入刚刚初始化的节点
 			}
-			//fmt.Println(son.child[key] )
-			//fmt.Println("+-----------------+")
-			son = son.child[key] //将新节点赋给第一个son节点（不是真正的赋值，应该是将这个子节点作为下一次遍历的son父节点）
-			//fmt.Println(son)
+			son = son.child[key] //将这个子节点作为下一次遍历的son父节点）
 		}
 	}
 	son.terminal = true
@@ -61,6 +58,7 @@ func (mux *Trie) Insert(method string, path string, handler http.HandlerFunc) {
 	son.path = path
 	son.method = method
 }
+
 func (mux *Trie) Find(key string) (string, http.HandlerFunc) {
 	son := mux.root
 	pattern := strings.TrimPrefix(key, "/")

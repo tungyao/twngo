@@ -2,20 +2,28 @@ package test
 
 import (
 	"../tnwb"
-	"fmt"
 	"net/http"
 	"testing"
 )
 
-func TestTree(t *testing.T) {
-	route := tnwb.NewTrie()
+func TestHttpServer(t *testing.T) {
+	router := tnwb.NewTrie()
+	//router.Static("./static")
+	router.Get("/a", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("application", "text/html")
+		_, _ = writer.Write([]byte(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<h1>123</h1>
+</body>
+</html>`))
 
-	route.Router("get", "/a", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = fmt.Fprint(writer, "/a")
 	})
-	route.Router("get", "/a/a", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = fmt.Fprint(writer, "/a/a")
-	})
-	route.Listening(":80", "", "", route)
 
+	_ = http.ListenAndServe(":80", router)
 }
