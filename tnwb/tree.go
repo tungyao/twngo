@@ -30,7 +30,7 @@ func NewSon(method string, path string, handler http.HandlerFunc, deep int) *Son
 		child:   make(map[string]*Son),
 	}
 }
-func NewTrie() *Trie {
+func NewRouter() *Trie {
 	return &Trie{
 		num: 1,
 		root: NewSon("GET", "/", func(writer http.ResponseWriter, request *http.Request) {
