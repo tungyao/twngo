@@ -12,6 +12,11 @@ import (
 
 var FileType = map[string]string{"css": "text/css"}
 
+type Groups struct {
+	tree *Trie
+	path string
+}
+
 func writeStaticFile(path string, filename []string, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", FileType[filename[1]])
 	if f, err := os.Open("." + path); err == nil {
@@ -39,6 +44,25 @@ func (mux *Trie) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fun(w, r)
 	}
 }
+func (mux *Trie) Group(path string, fn func(groups *Groups)) {
+	g := new(Groups)
+	g.tree = mux
+	g.path = path
+	fn(g)
+}
+func (mux *Groups) Get(path string, fun http.HandlerFunc) {
+	mux.tree.Get(mux.path+path, fun)
+}
+func (mux *Groups) Post(path string, fun http.HandlerFunc) {
+	mux.tree.Post(mux.path+path, fun)
+}
+func (mux *Groups) Put(path string, fun http.HandlerFunc) {
+	mux.tree.Put(mux.path+path, fun)
+}
+func (mux *Groups) Delete(path string, fun http.HandlerFunc) {
+	mux.tree.Delete(mux.path+path, fun)
+}
+
 func (mux *Trie) Get(path string, fun http.HandlerFunc) {
 	mux.Insert(http.MethodGet, path, fun)
 }

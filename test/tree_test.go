@@ -2,6 +2,7 @@ package test
 
 import (
 	"../tnwb"
+	"fmt"
 	"net/http"
 	"testing"
 )
@@ -9,6 +10,16 @@ import (
 func TestHttpServer(t *testing.T) {
 	router := tnwb.NewTrie()
 	//router.Static("./static")
+	router.Group("/user", func(groups *tnwb.Groups) {
+		groups.Get("/me", func(writer http.ResponseWriter, request *http.Request) {
+			fmt.Fprintln(writer, "HELLO")
+		})
+	})
+	router.Group("/other", func(groups *tnwb.Groups) {
+		groups.Get("/me", func(writer http.ResponseWriter, request *http.Request) {
+			fmt.Fprintln(writer, "WORLD")
+		})
+	})
 	router.Get("/a", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("application", "text/html")
 		_, _ = writer.Write([]byte(`<!DOCTYPE html>
@@ -25,5 +36,5 @@ func TestHttpServer(t *testing.T) {
 
 	})
 
-	_ = http.ListenAndServe(":80", router)
+	_ = router.Listening(":80", router)
 }
