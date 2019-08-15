@@ -22,13 +22,11 @@ func writeStaticFile(path string, filename []string, w http.ResponseWriter) {
 func (mux *Trie) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	reg := regexp.MustCompile(`^/static[/\w]*\.\w+$`)
 	file := reg.FindStringSubmatch(r.URL.String())
-	log.Println(file)
 	if len(file) != 0 {
 		filename := strings.Split(file[0], ".")
 		writeStaticFile(r.URL.Path, filename, w)
 		return
 	}
-
 	me, fun := mux.Find(r.URL.Path)
 	if fun == nil || r.Method != me {
 		w.Header().Set("Content-type", "text/html")
@@ -38,6 +36,23 @@ func (mux *Trie) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if fun != nil {
 		fun(w, r)
 	}
+}
+
+type Groups struct {
+	Tree *Trie
+	path string
+}
+func (mux *Groups) Get(path string, fun http.HandlerFunc) {
+	mux.Tree.Get(mux.path+path, fun)
+}
+func (mux *Groups) Post(path string, fun http.HandlerFunc) {
+	mux.Tree.Post(mux.path+path, fun)
+}
+func (mux *Groups) Put(path string, fun http.HandlerFunc) {
+	mux.Tree.Put(mux.path+path, fun)
+}
+func (mux *Groups) Delete(path string, fun http.HandlerFunc) {
+	mux.Tree.Delete(mux.path+path, fun)
 }
 func (mux *Trie) Get(path string, fun http.HandlerFunc) {
 	mux.Insert(http.MethodGet, path, fun)
@@ -53,6 +68,12 @@ func (mux *Trie) Delete(path string, fun http.HandlerFunc) {
 }
 func (mux *Trie) Static(filepath string) {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+}
+func (mux *Trie) Group(path string,fn func(g *Groups)){
+	gg:=new(Groups)
+	gg.path = path
+	gg.Tree = mux
+	fn(gg)
 }
 func (mux *Trie) Listening(parameter ...interface{}) error {
 	if len(parameter) != 2 && len(parameter) != 4 {
