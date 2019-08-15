@@ -63,7 +63,7 @@ func (mux *Trie) Listening(parameter ...interface{}) error {
 			return ok
 		}
 	} else {
-		if ok := http.ListenAndServeTLS(parameter[0].(string), parameter[1].(string), parameter[2].(string), parameter[1].(http.Handler)); ok != nil {
+		if ok := http.ListenAndServeTLS(parameter[0].(string), parameter[1].(string), parameter[2].(string), parameter[3].(http.Handler)); ok != nil {
 			return ok
 		}
 	}
