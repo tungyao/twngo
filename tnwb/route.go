@@ -20,7 +20,7 @@ func writeStaticFile(path string, filename []string, w http.ResponseWriter) {
 	}
 }
 func (mux *Trie) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	reg := regexp.MustCompile(`^/static/\w+\.\w+$`)
+	reg := regexp.MustCompile(`^/static[/\w]*\.\w+$`)
 	file := reg.FindStringSubmatch(r.URL.String())
 	log.Println(file)
 	if len(file) != 0 {
