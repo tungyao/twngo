@@ -2,13 +2,16 @@ package tnwb
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
 type Trie struct {
 	num  int64
 	root *Son
+	file *os.File
 }
 type Son struct {
 	key      string // /a
@@ -31,11 +34,16 @@ func NewSon(method string, path string, handler http.HandlerFunc, deep int) *Son
 	}
 }
 func NewRouter() *Trie {
+	f, err := os.OpenFile("/var/log/twngo/log.log", os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println(err)
+	}
 	return &Trie{
 		num: 1,
 		root: NewSon("GET", "/", func(writer http.ResponseWriter, request *http.Request) {
 			_, _ = fmt.Fprint(writer, "index")
 		}, 1),
+		file: f,
 	}
 }
 func (mux *Trie) Insert(method string, path string, handler http.HandlerFunc) {

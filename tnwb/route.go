@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var FileType = map[string]string{"css": "text/css"}
@@ -25,20 +26,20 @@ func writeStaticFile(path string, filename []string, w http.ResponseWriter) {
 	}
 }
 func (mux *Trie) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	logg := log.New(mux.file, "[Info]", log.Llongfile)
+	logg.Println(time.ANSIC + "\t" + r.Proto + "\t" + r.URL.Path + "\t" + r.Host + "\t" + r.Method)
 	reg := regexp.MustCompile(`^/static[/\w]*\.\w+$`)
 	file := reg.FindStringSubmatch(r.URL.String())
-	log.Println(file)
 	if len(file) != 0 {
 		filename := strings.Split(file[0], ".")
 		writeStaticFile(r.URL.Path, filename, w)
 		return
 	}
-
 	me, fun := mux.Find(r.URL.Path)
 	if fun == nil || r.Method != me {
 		w.Header().Set("Content-type", "text/html")
-
-		_, _ = w.Write([]byte("<h1 style=\"font-size=2000px;\">404</h1>"))
+		w.WriteHeader(404)
+		_, _ = w.Write([]byte("<p style=\"font-size=500px\">404</p>"))
 	}
 	if fun != nil {
 		fun(w, r)
@@ -91,6 +92,5 @@ func (mux *Trie) Listening(parameter ...interface{}) error {
 			return ok
 		}
 	}
-	log.Println("service is running")
 	return nil
 }
