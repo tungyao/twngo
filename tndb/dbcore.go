@@ -15,7 +15,7 @@ const (
 )
 
 type FUNC interface {
-	Use(dbname string, pwd string) *DB
+	Use(dbname string, pwd string, name string) *DB
 
 	Select(string) *DB
 	All(column ...string) []map[string]interface{}
@@ -94,7 +94,7 @@ func setColumn(column ...[]string) string {
 func (d *DB) FindOne(column ...string) map[string]interface{} {
 
 	d.formatSql["column"] = setColumn(column)
-	d.formatSql["limit"] = " limit 1"
+	d.formatSql["limit"] = "limit 1"
 
 	d.sql = d.formatSql["select"] + d.formatSql["column"] + d.formatSql["from"] + d.formatSql["where"] + d.formatSql["limit"]
 
@@ -127,7 +127,7 @@ func (d *DB) IsExits() *DB {
 }
 
 //TODO 使用数据库 Use
-func (d *DB) Use(dbname string, pwd string) *DB {
+func (d *DB) Use(dbname string, pwd string, name string) *DB {
 	d.db = dbname
 	db, err := sql.Open("mysql", "root:"+pwd+"@tcp(localhost)/"+dbname+"?charset=utf8")
 	fmt.Println(err)
