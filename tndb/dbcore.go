@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
 
 const (
@@ -27,6 +28,10 @@ type FUNC interface {
 	Key(interface{}) *DB
 	Where(key map[string]string) *DB
 	Done() int64
+
+	Command(string) *DB
+	Execute() (int64, int64)
+	Query() []map[string]interface{}
 }
 type DB struct {
 	op        int
@@ -52,7 +57,7 @@ func (d *DB) All(column ...string) []map[string]interface{} {
 	toError(err)
 	columns, _ := rows.Columns()
 	length := len(columns)
-	data := make([]map[string]interface{}, 1)
+	data := make([]map[string]interface{}, 0)
 	n := 0
 	for rows.Next() {
 		value := make([]interface{}, length)
@@ -71,7 +76,6 @@ func (d *DB) All(column ...string) []map[string]interface{} {
 		n++
 
 	}
-	fmt.Println(data)
 	return data
 }
 func setColumn(column ...[]string) string {
@@ -185,6 +189,51 @@ func (d *DB) Done() int64 {
 	fmt.Println(d.sql)
 	return id
 }
+func (d *DB) Command(sql string) *DB {
+	d.sql = sql
+	return d
+}
+func (d *DB) Execute() (int64, int64) {
+	stmt, err := d.kel.Prepare(d.sql)
+	toError(err)
+	res, err := stmt.Exec()
+	toError(err)
+	id, err := res.LastInsertId()
+	toError(err)
+	rw, err := res.RowsAffected()
+	return rw, id
+}
+func (d *DB) Query() []map[string]interface{} {
+	rows, err := d.kel.Query(d.sql)
+	toError(err)
+	columns, err := rows.Columns()
+	toError(err)
+	length := len(columns)
+	data := make([]map[string]interface{}, 0)
+	n := 0
+	for rows.Next() {
+		value := make([]interface{}, length)
+		columnPointers := make([]interface{}, length)
+		for i := 0; i < length; i++ {
+			columnPointers[i] = &value[i]
+		}
+		err = rows.Scan(columnPointers...)
+		toError(err)
+		//data[n] = make(map[string]interface{})
+		for i := 0; i < length; i++ {
+			columnName := columns[i]
+			columnValue := columnPointers[i].(*interface{})
+			//data[n][columnName] = *columnValue
+			data = append(data, map[string]interface{}{columnName: *columnValue})
+		}
+		n++
+
+	}
+	return data
+}
 func toError(err error) {
+	if err != nil {
+		log.Panic(err)
+	}
 	return
 }
